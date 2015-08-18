@@ -28,7 +28,9 @@ func init() {
 }
 
 // Event interface TODO
-type Event interface{}
+type Event interface {
+	Validate() error
+}
 
 // DefaultAnnotations defines required information shared by all events
 type DefaultAnnotations struct {
@@ -109,7 +111,7 @@ func (a *DefaultAnnotations) DefaultsRequiredValues() {
 type User struct {
 	*DefaultAnnotations
 
-	// Category is always 'user'
+	// Category should always be 'user'
 	Category string `json:"category"`
 }
 
@@ -121,14 +123,20 @@ func NewUserEvent(d *DefaultAnnotations) *User {
 	}
 }
 
-// ValidateAttributes always returns nil for user
-func (User) ValidateAttributes() error {
+// Validate returns an error if any of the event fields is invalid
+func (e User) Validate() error {
+	if e.Category != "user" {
+		return fmt.Errorf("User category MUST be 'user', was %s", e.Category)
+	}
 	return nil
 }
 
 // Business events are for real-money purchases.
 type Business struct {
 	*DefaultAnnotations
+
+	// Category should always be 'business'
+	Category string `json:"category"`
 
 	// A 2 part event id; ItemType:ItemId.
 	EventID string `json:"event_id"`
@@ -147,15 +155,44 @@ type Business struct {
 	// time a business event is submitted during the lifetime (installation) of
 	// the game/app.
 	TransactionNumber uint `json:"transaction_num"`
+
+	// OPTIONAL
+	// A string representing the cart (the location) from which the purchase was
+	// made. Could be menu_shop or end_of_level_shop.
+	CartType string `json:"cart_type"`
 }
 
-// ValidateAttributes returns whether the event fields are valid
-func (e Business) ValidateAttributes() error {
+// Validate returns an error if any of the event fields is invalid
+func (e Business) Validate() error {
+	if e.Category != "business" {
+		return fmt.Errorf("Business category MUST be 'business', was %s",
+			e.Category)
+	}
 	if ok := businessID.MatchString(e.EventID); !ok {
 		return errors.New("EventID doesn't match pattern")
 	}
-	//TODO validate currency
+	if e.Currency == "" {
+		return errors.New("Currency missing")
+	}
+	found := false
+	for _, c := range Currencies {
+		if c == e.Currency {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return errors.New("Currency is invalid. Check Currencies for a valid list")
+	}
 	return nil
+}
+
+// NewBusinessEvent created a new user event with the default annotations
+func NewBusinessEvent(d *DefaultAnnotations) *Business {
+	return &Business{
+		Category:           "business",
+		DefaultAnnotations: d,
+	}
 }
 
 // SessionEnd event should always be sent whenever a session is determined
@@ -165,7 +202,7 @@ func (e Business) ValidateAttributes() error {
 type SessionEnd struct {
 	*DefaultAnnotations
 
-	// Category is always 'session_end'
+	// Category should always be 'session_end'
 	Category string `json:"category"`
 
 	// Session length in seconds.
@@ -180,14 +217,19 @@ func NewSessionEndEvent(d *DefaultAnnotations) *SessionEnd {
 	}
 }
 
-// ValidateAttributes returns an error for invalid length
-func (e SessionEnd) ValidateAttributes() error {
+// Validate returns an error for invalid length
+func (e SessionEnd) Validate() error {
+	if e.Category != "session_end" {
+		return fmt.Errorf("SessionEnd category MUST be 'session_end', was %s",
+			e.Category)
+	}
 	if e.Length < 0 {
-		return errors.New("Length must be equal or greater than 0")
+		return fmt.Errorf("Length must be equal or greater than 0 (%d)", e.Length)
 	}
 	return nil
 }
 
+/*
 // Design events are for general in-game events that are not covered by other
 // events.
 type Design struct {
@@ -200,10 +242,11 @@ type Design struct {
 	Value float64 `json:"value,omitempty"`
 }
 
-// ValidateAttributes returns whether the event fields are valid
-func (e Design) ValidateAttributes() error {
+// Validate returns an error if any of the event fields is invalid
+func (e Design) Validate() error {
 	if ok := designID.MatchString(e.EventID); !ok {
 		return errors.New("EventID doesn't match pattern")
 	}
 	return nil
 }
+*/
