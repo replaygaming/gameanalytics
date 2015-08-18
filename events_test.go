@@ -2,6 +2,11 @@ package ga
 
 import "testing"
 
+type eventCase struct {
+	event Event
+	valid bool
+}
+
 func TestNewUserEvent(t *testing.T) {
 	s := &DefaultAnnotations{}
 	e := NewUserEvent(s)
@@ -10,18 +15,27 @@ func TestNewUserEvent(t *testing.T) {
 	}
 }
 
-func TestUser_Validate(t *testing.T) {
-	e := &User{Category: "other"}
-	err := e.Validate()
-	if err == nil {
-		t.Errorf("Expected user category to be invalid (%s)", e.Category)
+func validateEvents(cases []eventCase, t *testing.T) {
+	for _, c := range cases {
+		err := c.event.Validate()
+		if c.valid {
+			if err != nil {
+				t.Errorf("Expected event (%v) to be valid", c.event)
+			}
+		} else {
+			if err == nil {
+				t.Errorf("Expected event (%v) to be invalid", c.event)
+			}
+		}
 	}
+}
 
-	e.Category = "user"
-	err = e.Validate()
-	if err != nil {
-		t.Errorf("Expected user category to be valid (%v)", e)
+func TestUser_Validate(t *testing.T) {
+	var cases = []eventCase{
+		{&User{Category: "other"}, false},
+		{&User{Category: "user"}, true},
 	}
+	validateEvents(cases, t)
 }
 
 func TestNewSessionEndEvent(t *testing.T) {
@@ -34,24 +48,12 @@ func TestNewSessionEndEvent(t *testing.T) {
 }
 
 func TestSessionEnd_Validate(t *testing.T) {
-	e := &SessionEnd{Category: "other"}
-	err := e.Validate()
-	if err == nil {
-		t.Errorf("Expected session_end category to be invalid (%s)", e.Category)
+	var cases = []eventCase{
+		{&SessionEnd{Category: "other"}, false},
+		{&SessionEnd{Category: "session_end", Length: -1}, false},
+		{&SessionEnd{Category: "session_end", Length: 0}, true},
 	}
-	e.Category = "session_end"
-
-	e.Length = -1
-	err = e.Validate()
-	if err == nil {
-		t.Errorf("Expected session_end length to be invalid (%d)", e.Length)
-	}
-
-	e.Length = 0
-	err = e.Validate()
-	if err != nil {
-		t.Errorf("Expected session_end category to be valid (%v)", e)
-	}
+	validateEvents(cases, t)
 }
 
 func TestNewBusinessEvent(t *testing.T) {
@@ -63,29 +65,12 @@ func TestNewBusinessEvent(t *testing.T) {
 }
 
 func TestBusiness_Validate(t *testing.T) {
-	e := &Business{Category: "other"}
-	err := e.Validate()
-	if err == nil {
-		t.Errorf("Expected business category to be invalid (%s)", e.Category)
+	var cases = []eventCase{
+		{&Business{Category: "other"}, false},
+		{&Business{Category: "business", EventID: "WrongPattern"}, false},
+		{&Business{Category: "business", EventID: "Correct:Pattern", Currency: ""}, false},
+		{&Business{Category: "business", EventID: "Correct:Pattern", Currency: "AAA"}, false},
+		{&Business{Category: "business", EventID: "Correct:Pattern", Currency: "USD"}, true},
 	}
-	e.Category = "business"
-
-	e.EventID = "WrongPattern"
-	err = e.Validate()
-	if err == nil {
-		t.Errorf("Expected business event_id to be invalid (%s)", e.EventID)
-	}
-	e.EventID = "Correct:Pattern"
-
-	e.Currency = "AAA"
-	err = e.Validate()
-	if err == nil {
-		t.Errorf("Expected business currency to be invalid (%s)", e.Currency)
-	}
-	e.Currency = "USD"
-
-	err = e.Validate()
-	if err != nil {
-		t.Errorf("Expected business to be valid (%v)", e)
-	}
+	validateEvents(cases, t)
 }
