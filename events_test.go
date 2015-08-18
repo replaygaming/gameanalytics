@@ -1,10 +1,28 @@
 package ga
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 type eventCase struct {
 	event Event
 	valid bool
+}
+
+func TestNewDefaultAnnotations(t *testing.T) {
+	result := NewDefaultAnnotations()
+	expected := &DefaultAnnotations{
+		Device:       "unknown",
+		APIVersion:   2,
+		SDKVersion:   "rest api v2",
+		OSVersion:    "webplayer 0.0.1",
+		Manufacturer: "unknown",
+		Platform:     "webplayer",
+	}
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expecting %v to be equal to %v", result, expected)
+	}
 }
 
 func TestNewUserEvent(t *testing.T) {
@@ -73,4 +91,13 @@ func TestBusiness_Validate(t *testing.T) {
 		{&Business{Category: "business", EventID: "Correct:Pattern", Currency: "USD"}, true},
 	}
 	validateEvents(cases, t)
+}
+
+func TestCompileRegexp(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("expected function to panic, it did not\n")
+		}
+	}()
+	compileRegex("[")
 }

@@ -3,7 +3,6 @@ package ga
 import (
 	"errors"
 	"fmt"
-	"log"
 	"regexp"
 )
 
@@ -13,18 +12,8 @@ var (
 )
 
 func init() {
-	var err error
-	businessID, err = regexp.Compile(
-		"^[A-Za-z0-9\\s\\-_\\.\\(\\)\\!\\?]{1,64}:[A-Za-z0-9\\s\\-_\\.\\(\\)\\!\\?]{1,64}$")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	designID, err = regexp.Compile(
-		"^[A-Za-z0-9\\s\\-_\\.\\(\\)\\!\\?]{1,64}(:[A-Za-z0-9\\s\\-_\\.\\(\\)\\!\\?]{1,64}){0,4}$")
-	if err != nil {
-		log.Fatal(err)
-	}
+	businessID = compileRegex("^[A-Za-z0-9\\s\\-_\\.\\(\\)\\!\\?]{1,64}:[A-Za-z0-9\\s\\-_\\.\\(\\)\\!\\?]{1,64}$")
+	designID = compileRegex("^[A-Za-z0-9\\s\\-_\\.\\(\\)\\!\\?]{1,64}(:[A-Za-z0-9\\s\\-_\\.\\(\\)\\!\\?]{1,64}){0,4}$")
 }
 
 // Event interface TODO
@@ -82,26 +71,15 @@ type DefaultAnnotations struct {
 	SessionNumber uint `json:"session_num"`
 }
 
-// DefaultsRequiredValues sets sensible defaults for missing values on shared
-// annotations.
-func (a *DefaultAnnotations) DefaultsRequiredValues() {
-	if a.Device == "" {
-		a.Device = "unknown"
-	}
-	if a.APIVersion == 0 {
-		a.APIVersion = APIVersion
-	}
-	if a.SDKVersion == "" {
-		a.SDKVersion = SDKVersion
-	}
-	if a.OSVersion == "" {
-		a.OSVersion = fmt.Sprintf("webplayer %s", PkgVersion)
-	}
-	if a.Manufacturer == "" {
-		a.Manufacturer = "unknown"
-	}
-	if a.Platform == "" {
-		a.Platform = "webplayer"
+// NewDefaultAnnotations sets sensible defaults for values on shared annotations.
+func NewDefaultAnnotations() *DefaultAnnotations {
+	return &DefaultAnnotations{
+		Device:       "unknown",
+		APIVersion:   APIVersion,
+		SDKVersion:   SDKVersion,
+		OSVersion:    fmt.Sprintf("webplayer %s", PkgVersion),
+		Manufacturer: "unknown",
+		Platform:     "webplayer",
 	}
 }
 
@@ -250,3 +228,11 @@ func (e Design) Validate() error {
 	return nil
 }
 */
+
+func compileRegex(pattern string) *regexp.Regexp {
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		panic(err)
+	}
+	return re
+}
