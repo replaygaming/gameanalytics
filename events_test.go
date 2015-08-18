@@ -16,7 +16,7 @@ func TestNewDefaultAnnotations(t *testing.T) {
 		Device:       "unknown",
 		APIVersion:   2,
 		SDKVersion:   "rest api v2",
-		OSVersion:    "webplayer 0.0.1",
+		OSVersion:    "webplayer 0.0.2",
 		Manufacturer: "unknown",
 		Platform:     "webplayer",
 	}

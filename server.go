@@ -17,7 +17,7 @@ import (
 const (
 	// PkgVersion is the current version of this package. Follows major, minor and
 	// patch conventions
-	PkgVersion = "0.0.1"
+	PkgVersion = "0.0.2"
 
 	// APIVersion is the current version supported by GameAnalytics
 	APIVersion = 2
@@ -143,11 +143,6 @@ func (s *Server) SendEvents(e []Event) error {
 
 	log.Printf("[INFO] Event sent (%s), response: %s\n", payload, result)
 
-	return nil
-}
-
-// Enqueue puts event into a queue to be dispatched to GA TODO
-func (s *Server) Enqueue(e Event) error {
 	return nil
 }
 
