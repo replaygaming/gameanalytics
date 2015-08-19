@@ -1,4 +1,4 @@
-# GameAnalytics REST API Integration
+# GameAnalytics REST API Integration [![Build Status](https://semaphoreci.com/api/v1/projects/3254496e-2248-4010-9a2e-f8c9cb91de6f/516898/badge.svg)](https://semaphoreci.com/paulgould/gameanalytics)
 
 ## Events Supported
 
@@ -6,7 +6,7 @@
   - [ ] default annotations optional fields
   - [x] user (session start)
   - [x] session_end
-  - [ ] business
+  - [x] business
   - [ ] resource
   - [ ] progression
   - [ ] design
