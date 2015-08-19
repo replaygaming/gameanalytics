@@ -1,4 +1,4 @@
-# GameAnalytics REST API Integration [![Build Status](https://semaphoreci.com/api/v1/projects/3254496e-2248-4010-9a2e-f8c9cb91de6f/516898/badge.svg)](https://semaphoreci.com/paulgould/gameanalytics)
+# GameAnalytics REST API Integration [![Build Status](https://semaphoreci.com/api/v1/projects/3254496e-2248-4010-9a2e-f8c9cb91de6f/516898/badge.svg)](https://semaphoreci.com/paulgould/gameanalytics) [![GoDoc](https://godoc.org/github.com/replaygaming/gameanalytics?status.svg)](https://godoc.org/github.com/replaygaming/gameanalytics)
 
 ## Events Supported
 
